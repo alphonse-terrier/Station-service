@@ -3,8 +3,17 @@ from openrouteservice import convert
 import psycopg2
 import json
 import pandas as pd
-from math import radians, cos, sin, asin, sqrt
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession
 
+
+
+from math import radians, cos, sin, asin, sqrt
+from pyspark import SparkContext
+
+sc = SparkContext("local", "App Name")
+sql = SQLContext(sc)
 
 f = open("credentials.json")
 credentials = json.load(f)
@@ -15,7 +24,13 @@ conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username
 
 df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
 
+spark= SparkSession.builder.getOrCreate()
 print(df_stations)
+spark_df = sql.createDataFrame(df_stations)
+
+spark_df.registerTempTable("stations_services")
+
+
 
 def haversine(point1, point2, miles=False):
     """ Calculate the great-circle distance between two points on the Earth surface.
@@ -61,12 +76,12 @@ AVG_EARTH_RADIUS = 6371  # in km
 MILES_PER_KILOMETER = 0.621371
 
 def threshold(list_position):
-    list_out=[]
+    list_out = []
     for i in range(0, len(list_position)):
         if i%14 == 0:
             list_out.append(list_position[i])
     return(list_out)
-
+'''
 print(len(list_position))
 thresh = threshold(list_position)
 print(len(thresh))
@@ -74,3 +89,4 @@ print(thresh)
 
 for pos in thresh:
     print(haversine(pos, arrivee))
+'''
