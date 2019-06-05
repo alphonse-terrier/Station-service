@@ -3,16 +3,6 @@ from openrouteservice import convert
 import psycopg2
 import json
 import pandas as pd
-from pyspark import SparkContext
-
-from pyspark.sql import SparkSession
-
-from pyspark.sql.types import *
-
-from pyspark.sql import functions as F
-
-from pyspark.sql import DataFrameWriter as W
-
 from math import radians, cos, sin, asin, sqrt
 
 
@@ -26,12 +16,6 @@ conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username
 df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
 
 print(df_stations)
-
-
-
-spark = SparkSession.builder.appName("HDFS_Haversine").getOrCreate()
-
-
 
 def haversine(point1, point2, miles=False):
     """ Calculate the great-circle distance between two points on the Earth surface.
@@ -61,34 +45,32 @@ def haversine(point1, point2, miles=False):
 
 
 
-depart = (8.34234, 48.23424)
-arrivee = (8.34423, 48.26424)
+depart = (-0.8833, 47.0667)
+arrivee = (48.26424, 48.8534)
 coords = (depart, arrivee)
-
-
-
-
-
-
-
-
-
 
 client = openrouteservice.Client(key='5b3ce3597851110001cf6248c65425cfab7e40539af9e1987459f8e4') # Specify your personal API key
 
 geometry = client.directions(coords)['routes'][0]['geometry']
 
 decoded = convert.decode_polyline(geometry)
-
-print(len(decoded['coordinates']))
-print(decoded['coordinates'])
+list_position = decoded['coordinates']
 
 
 AVG_EARTH_RADIUS = 6371  # in km
 MILES_PER_KILOMETER = 0.621371
 
+def threshold(list_position):
+    list_out=[]
+    for i in range(0, len(list_position)):
+        if i%15 == 0:
+            list_out.append(list_position)
+    return(list_out)
 
+print(len(list_position))
+thresh = threshold(list_position)
+print(len(thresh))
+print(thresh)
 
-
-for pos in decoded['coordinates']:
+for pos in thresh:
     print(haversine(pos, arrivee))
