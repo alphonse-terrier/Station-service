@@ -82,7 +82,6 @@ print(data)
 f = open("credentials.json")
 credentials = json.load(f)
 f.close()
-type(data)
 
 conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'], password=credentials['password'], database=credentials['database'], port=credentials['db_port'],
                         connect_timeout=10)
