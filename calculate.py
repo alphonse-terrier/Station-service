@@ -63,8 +63,8 @@ MILES_PER_KILOMETER = 0.621371
 def threshold(list_position):
     list_out=[]
     for i in range(0, len(list_position)):
-        if i%15 == 0:
-            list_out.append(list_position)
+        if i%14 == 0:
+            list_out.append(list_position[i])
     return(list_out)
 
 print(len(list_position))
