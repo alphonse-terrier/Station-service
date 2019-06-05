@@ -6,6 +6,7 @@ import pandas as pd
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
 
 
 
@@ -29,10 +30,10 @@ print(df_stations)
 spark_df = sql.createDataFrame(df_stations)
 
 spark_df.registerTempTable("stations_services")
+spark_df.show(10)
 
 
-
-def haversine(point1, point2, miles=False):
+def haversine(lat1, lng1, lat2, lng2, miles=False):
     """ Calculate the great-circle distance between two points on the Earth surface.
     :input: two 2-tuples, containing the latitude and longitude of each point
     in decimal degrees.
@@ -41,10 +42,11 @@ def haversine(point1, point2, miles=False):
     The default unit is kilometers. Miles can be returned
     if the ``miles`` parameter is set to True.
     """
+    '''
     # unpack latitude/longitude
     lat1, lng1 = point1
     lat2, lng2 = point2
-
+    '''
     # convert all latitudes/longitudes from decimal degrees to radians
     lat1, lng1, lat2, lng2 = map(radians, (lat1, lng1, lat2, lng2))
 
@@ -77,16 +79,44 @@ MILES_PER_KILOMETER = 0.621371
 
 def threshold(list_position):
     list_out = []
+
     for i in range(0, len(list_position)):
         if i%14 == 0:
             list_out.append(list_position[i])
+    '''
+    for ind in range(-1, -len(list_position), -1):
+        break
+        #print(ind)
+        #if haversine(list_position[ind], list_position)
+    '''
     return(list_out)
-'''
+
 print(len(list_position))
 thresh = threshold(list_position)
+
+
 print(len(thresh))
 print(thresh)
 
+headers = ['Longitude_Road', 'Latitude_Road']
+
+thresh_pd = pd.DataFrame(thresh, columns=headers)
+print(thresh_pd)
+road = spark.createDataFrame(thresh_pd)
+
+
+udf_haversine = F.udf(haversine)
+
+cross = spark_df.crossJoin(road)
+
+cross = cross.withColumn('Distance', udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
+
+
+cross = cross.filter(cross.Distance < 8)
+cross.show(15)
+
+
+'''
 for pos in thresh:
     print(haversine(pos, arrivee))
 '''
