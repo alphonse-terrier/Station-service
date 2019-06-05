@@ -1,1 +1,3 @@
-password.txt
+credentials.txt
+*.xml
+.idea
