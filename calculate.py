@@ -7,9 +7,6 @@ from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-
-
-
 from math import radians, cos, sin, asin, sqrt
 from pyspark import SparkContext
 
@@ -26,27 +23,13 @@ conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username
 df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
 
 spark= SparkSession.builder.getOrCreate()
-print(df_stations)
 spark_df = sql.createDataFrame(df_stations)
 
 spark_df.registerTempTable("stations_services")
-spark_df.show(10)
+#spark_df.show(10)
 
 
 def haversine(lat1, lng1, lat2, lng2, miles=False):
-    """ Calculate the great-circle distance between two points on the Earth surface.
-    :input: two 2-tuples, containing the latitude and longitude of each point
-    in decimal degrees.
-    Example: haversine((45.7597, 4.8422), (48.8567, 2.3508))
-    :output: Returns the distance between the two points.
-    The default unit is kilometers. Miles can be returned
-    if the ``miles`` parameter is set to True.
-    """
-    '''
-    # unpack latitude/longitude
-    lat1, lng1 = point1
-    lat2, lng2 = point2
-    '''
     # convert all latitudes/longitudes from decimal degrees to radians
     lat1, lng1, lat2, lng2 = map(radians, (lat1, lng1, lat2, lng2))
 
@@ -91,17 +74,14 @@ def threshold(list_position):
     '''
     return(list_out)
 
-print(len(list_position))
 thresh = threshold(list_position)
 
 
-print(len(thresh))
-print(thresh)
+
 
 headers = ['Longitude_Road', 'Latitude_Road']
 
 thresh_pd = pd.DataFrame(thresh, columns=headers)
-print(thresh_pd)
 road = spark.createDataFrame(thresh_pd)
 
 
@@ -112,9 +92,11 @@ cross = spark_df.crossJoin(road)
 cross = cross.withColumn('Distance', udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
 
 
-cross = cross.filter(cross.Distance < 8)
-cross.show(15)
+cross = cross.filter(cross.Distance < 4)
+#cross.show(15)
 
+df = cross.select("gasstationid").toPandas().drop_duplicates()
+print(df)
 
 '''
 for pos in thresh:
