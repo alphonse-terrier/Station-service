@@ -131,14 +131,6 @@ for d in data:
 
 db_populate_script = db_populate_script[:-3] + ');'
 
-print(db_populate_script)
-
-db_creation_position_script = """UPDATE gas_stations SET position = ST_MakePoint(longitude, latitude);"""
-
-db_index_script = """CREATE INDEX pos_index
-    ON gas_stations
-    USING gist
-    (position);"""
 
 with conn.cursor() as cur:
     cur.execute(db_deletion_script)
@@ -147,6 +139,5 @@ with conn.cursor() as cur:
     print('Creation')
     cur.execute(db_populate_script)
     print('Populate')
-    # cur.execute(db_creation_position_script)
-    # cur.execute(db_index_script)
+
 conn.commit()

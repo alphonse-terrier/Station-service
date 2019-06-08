@@ -49,8 +49,11 @@ app.layout = html.Div([
         ], style={'width': "100%"})
     ]
     ),
-    html.Div(id='display'),
-    html.Button('Valider', id='button'),
+    html.Label(r''),
+
+    html.Div([
+        html.Button('Valider', id='button')
+        ], style={'width': "100%"}),
 
     html.Div(dcc.Graph(id="my-graph"))
 ], className="container")
