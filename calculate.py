@@ -31,16 +31,14 @@ sc = SparkContext("local", "App Name")
 sc.setLogLevel("WARN")
 sql = SQLContext(sc)
 
+
 def calculate(coords, fuel):
-
-
     conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'],
                             password=credentials['password'], database=credentials['database'],
                             port=credentials['db_port'],
                             connect_timeout=10)
 
     df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
-
     spark = SparkSession.builder.getOrCreate()
     spark_df = sql.createDataFrame(df_stations)
 
@@ -63,16 +61,15 @@ def calculate(coords, fuel):
     cross = cross.withColumn('Distance',
                              udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
 
-    cross = cross.filter(cross.Distance < 5)
+    cross = cross.filter(cross.Distance < 3)
 
     df = cross.select("gasstationid").toPandas().drop_duplicates()
 
     df = df.merge(df_stations, left_on='gasstationid', right_on='gasstationid')
     df = df.rename({fuel: 'prix'}, axis='columns')
-    df['nom'] = df['address'] + r'<br />' + df['city'] + r'<br />Prix : ' + df['prix'].astype(str) + ' euros'
-    print(df['nom'])
+    df['nom'] = df['address'] + r'<br />' + + df['codepostal'].astype(str) + ' ' + df['city'] + r'<br />Prix : ' + df[
+        'prix'].astype(str) + ' euros'
     df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(8)
-    print(df)
     return df
 
 
@@ -80,4 +77,3 @@ if __name__ == '__main__':
     depart = (-0.8833, 47.0667)
     arrivee = (48.26424, 48.8534)
     coords = (depart, arrivee)
-    print(calculate(coords, 'sp95'))

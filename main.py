@@ -76,27 +76,26 @@ def reset_button(depart, arrivee, gasfuel):
 )
 def update_figure(depart, arrivee, gasfuel, button):
     if button is not None:
-        print(depart, arrivee)
         trace = []
         coords = (whereitis(depart), whereitis(arrivee))
         df_station = calculate(coords, gasfuel)
 
         trace.append(
             go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
-                             marker={'symbol': "fuel", 'size': 10},
+                             marker={'symbol': "fuel", 'size': 9},
                              text=df_station['nom'], hoverinfo='text'))
 
         return {"data": trace,
                 "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
                                     mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
                                             'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
-                                            "style": 'mapbox://styles/mapbox/light-v9'})}
+                                            "style": 'mapbox://styles/mapbox/streets-v9'})}
     else:
         return {"data": [],
                 "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
                                     mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
                                             'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
-                                            "style": 'mapbox://styles/mapbox/light-v9'})}
+                                            "style": 'mapbox://styles/mapbox/streets-v9'})}
 
 
 if __name__ == '__main__':

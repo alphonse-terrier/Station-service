@@ -34,7 +34,6 @@ client = openrouteservice.Client(
 
 
 def list_trajet(coords):
-    print(coords)
     coords = ((coords[0][1], coords[0][0]), (coords[1][1], coords[1][0]))
     geometry = client.directions(coords)['routes'][0]['geometry']
     decoded = convert.decode_polyline(geometry)

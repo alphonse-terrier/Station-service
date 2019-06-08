@@ -52,9 +52,11 @@ def export(input_file):
         gas_station_properties = {
             "gasstationid": pdv.get("id"),
             "latitude": float(pdv.get("latitude")) / 100000.0,
+            "codepostal": int(pdv.get("cp")),
+            "departement": int(pdv.get("cp")) // 1000,
             "longitude": float(pdv.get("longitude")) / 100000.0,
-            "address": convert_none(pdv.find("adresse").text).replace('"', '').replace('\'', ' '),
-            "city": convert_none(pdv.find("ville").text).replace('\'', ' '),
+            "address": convert_none(pdv.find("adresse").text).replace('"', '').replace('\'', ' ').title(),
+            "city": convert_none(pdv.find("ville").text).replace('\'', ' ').title(),
         }
         prices = extract_prices(pdv)
         for p in PRICES_LIST:
@@ -89,6 +91,8 @@ db_creation_script = """CREATE TABLE gas_stations(
             gasstationid BIGINT,
             latitude FLOAT,
             longitude FLOAT,
+            codepostal INTEGER,
+            departement INTEGER,
             address TEXT,
             city TEXT,
             Gazole FLOAT,
@@ -101,6 +105,8 @@ db_creation_script = """CREATE TABLE gas_stations(
 columns = ["gasstationid",
            "latitude",
            "longitude",
+           "codepostal",
+           "departement",
            "address",
            "city",
            "Gazole",
