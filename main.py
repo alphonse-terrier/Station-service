@@ -7,7 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
-from geograph import whereitis, haversine
+from geograph import whereitis, haversine, getBoundsZoomLevel
 from calculate import calculate
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
@@ -79,6 +79,7 @@ def update_figure(depart, arrivee, gasfuel, button):
     zoom = 4.5
     if button is not None:
         coords = (whereitis(depart), whereitis(arrivee))
+
         # print(coords)
         center = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2]
         distance = haversine(coords[0][0], coords[0][1], coords[1][0], coords[1][1])

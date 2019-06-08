@@ -7,6 +7,7 @@ import io
 import xml.etree.ElementTree as et
 import json
 
+
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 SERVICES_LIST = ["Restauration à emporter", "Restauration sur place", "Bar", "Station de gonflage", "Lavage",
                  "Vente de gaz domestique (Butane, Propane) ", "Location de véhicule", "Piste poids lourds",
