@@ -7,6 +7,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
+from geograph import whereitis
+from calculate import calculate
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 
@@ -16,7 +18,8 @@ df1 = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/2011
 df = df1.dropna(axis=0)
 
 app_name = 'dash-scattermapboxplot'
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
+                        'https://codepen.io/alphonse-terrier/pen/jogGzz.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 liste_fuel = []
@@ -31,35 +34,66 @@ app.layout = html.Div([
         html.Label('Carburant'),
         dcc.Dropdown(
             options=[{'label': i, 'value': i.lower()} for i in PRICES_LIST],
-            value='gazole'
-        ), html.Label('Point de départ'),
-        dcc.Input(value='55 Rue du Faubourg Saint-Honoré, 75008 Paris', type='text'),
+            value='gazole',
+            id='fuel'
+        )], style={'width': "100%"}),
 
-        html.Label('Destination'),
-        dcc.Input(value='38 Rue Jean Mermoz, 14804 Deauville', type='text')]),
+    html.Div([
+        html.Div([
+            html.Label('Point de départ'),
+            dcc.Input(value='55 Rue du Faubourg Saint-Honoré, 75008 Paris', type='text', id='depart')
+        ], style={'width': "100%"}),
+        html.Div([
+            html.Label('Destination'),
+            dcc.Input(value='38 Rue Jean Mermoz, 14804 Deauville', type='text', id='arrivee'),
+        ], style={'width': "100%"})
+    ]
+    ),
+    html.Div(id='display'),
+    html.Button('Valider', id='button'),
 
-    html.Div([dcc.Dropdown(id="state-selected", value=['CA'], multi=True,
-                           options=[{'label': f'{us.states.lookup(i)}', 'value': i} for i in df.state.unique()],
-                           style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "50%"})]),
     html.Div(dcc.Graph(id="my-graph"))
 ], className="container")
 
 
 @app.callback(
-    dash.dependencies.Output("my-graph", "figure"),
-    [dash.dependencies.Input("state-selected", "value")])
-def update_figure(selected):
-    trace = []
-    for state in selected:
-        dff = df[df["state"] == state]
+    dash.dependencies.Output("button", 'n_clicks'),
+    [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
+     dash.dependencies.Input("fuel", "value")]
+)
+
+def reset_button(depart, arrivee, gasfuel):
+    return None
+
+
+@app.callback(
+    dash.dependencies.Output('my-graph', 'figure'),
+    [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
+     dash.dependencies.Input("fuel", "value"), dash.dependencies.Input("button", 'n_clicks')]
+)
+def update_figure(depart, arrivee, gasfuel, button):
+    if button is not None:
+        print(depart, arrivee)
+        trace = []
+        coords = (whereitis(depart), whereitis(arrivee))
+        df_station = calculate(coords, gasfuel)
+
         trace.append(
-            go.Scattermapbox(lat=dff["lat"], lon=dff["long"], mode='markers', marker={'symbol': "fuel", 'size': 10},
-                             text=dff['airport'], hoverinfo='text', name=state))
-    return {"data": trace,
-            "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
-                                mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
-                                        'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
-                                        "style": 'mapbox://styles/mapbox/light-v9'})}
+            go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
+                             marker={'symbol': "fuel", 'size': 10},
+                             text=df_station['nom'], hoverinfo='text'))
+
+        return {"data": trace,
+                "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
+                                    mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
+                                            'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
+                                            "style": 'mapbox://styles/mapbox/light-v9'})}
+    else:
+        return {"data": [],
+                "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
+                                    mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
+                                            'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
+                                            "style": 'mapbox://styles/mapbox/light-v9'})}
 
 
 if __name__ == '__main__':

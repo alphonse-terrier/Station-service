@@ -1,14 +1,11 @@
 # coding: utf-8
 
-import pyodbc
 import psycopg2
 import requests
-from os import environ
 import zipfile
 import io
 import xml.etree.ElementTree as et
 import json
-
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 SERVICES_LIST = ["Restauration à emporter", "Restauration sur place", "Bar", "Station de gonflage", "Lavage",
@@ -17,7 +14,6 @@ SERVICES_LIST = ["Restauration à emporter", "Restauration sur place", "Bar", "S
                  "Vente de pétrole lampant", "Automate CB 24/24", "Relais colis", "Boutique alimentaire",
                  "Boutique non alimentaire", "Carburant additivé", "Services réparation / entretien",
                  "Toilettes publiques", "Wifi", "Aire de camping-cars", "Espace bébé", "Douches", "Bornes électriques"]
-
 
 
 def convert_none(val):
@@ -68,6 +64,7 @@ def export(input_file):
 
     return buff
 
+
 r = requests.get('https://donnees.roulez-eco.fr/opendata/instantane', stream=True)
 if r.status_code == 200:
     with zipfile.ZipFile(io.BytesIO(r.content), 'r') as myzip:
@@ -83,7 +80,8 @@ f = open("credentials.json")
 credentials = json.load(f)
 f.close()
 
-conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'], password=credentials['password'], database=credentials['database'], port=credentials['db_port'],
+conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'], password=credentials['password'],
+                        database=credentials['database'], port=credentials['db_port'],
                         connect_timeout=10)
 
 db_deletion_script = """DROP TABLE IF EXISTS gas_stations;"""
@@ -101,18 +99,17 @@ db_creation_script = """CREATE TABLE gas_stations(
             SP95 FLOAT);"""
 
 columns = ["gasstationid",
-            "latitude",
-            "longitude",
-            "address",
-            "city",
-            "Gazole",
-            "E10",
-            "SP98",
-            "E85",
-            "GPLc",
-            "SP95"
+           "latitude",
+           "longitude",
+           "address",
+           "city",
+           "Gazole",
+           "E10",
+           "SP98",
+           "E85",
+           "GPLc",
+           "SP95"
            ]
-
 
 db_populate_script = 'INSERT INTO gas_stations('
 
@@ -121,12 +118,11 @@ for e in columns:
 
 db_populate_script = db_populate_script[:-2] + ') VALUES '
 
-
 for d in data:
     db_populate_script += '('
     for e in columns:
         if d[e] == None:
-            db_populate_script += 'null'+ ','
+            db_populate_script += 'null' + ','
         elif e == 'address' or e == 'city':
             db_populate_script += "'" + str(d[e]) + "',"
         else:
@@ -151,6 +147,6 @@ with conn.cursor() as cur:
     print('Creation')
     cur.execute(db_populate_script)
     print('Populate')
-    #cur.execute(db_creation_position_script)
-    #cur.execute(db_index_script)
+    # cur.execute(db_creation_position_script)
+    # cur.execute(db_index_script)
 conn.commit()
