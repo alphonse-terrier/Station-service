@@ -69,7 +69,7 @@ def calculate(coords, fuel):
 
     df = df.merge(df_stations, left_on='gasstationid', right_on='gasstationid')
     df = df.rename({fuel: 'prix'}, axis='columns')
-    df['nom'] = df['address'] + r'<br /> ' + df['city']
+    df['nom'] = df['address'] + r'<br />' + df['city'] + r'<br />Prix : ' + df['prix'].astype(str) + ' euros'
     print(df['nom'])
     df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(8)
     print(df)
