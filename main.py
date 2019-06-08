@@ -7,7 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
-from geograph import whereitis
+from geograph import whereitis, haversine
 from calculate import calculate
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
@@ -53,7 +53,7 @@ app.layout = html.Div([
 
     html.Div([
         html.Button('Valider', id='button', value='1')
-        ], style={'width': "100%"}),
+    ], style={'width': "100%"}),
 
     html.Div(dcc.Graph(id="my-graph"))
 ], className="container")
@@ -64,7 +64,6 @@ app.layout = html.Div([
     [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
      dash.dependencies.Input("fuel", "value")]
 )
-
 def reset_button(depart, arrivee, gasfuel):
     return None
 
@@ -76,16 +75,20 @@ def reset_button(depart, arrivee, gasfuel):
 )
 def update_figure(depart, arrivee, gasfuel, button):
     trace = []
+    center = (46.4833, 2.5333)
+    zoom = 4.5
     if button is not None:
-
         coords = (whereitis(depart), whereitis(arrivee))
+        # print(coords)
+        center = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2]
+        distance = haversine(coords[0][0], coords[0][1], coords[1][0], coords[1][1])
+        zoom = int(1300 / int(distance))
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
                              marker={'symbol': "circle", 'size': 12},
                              text=[depart, arrivee], hoverinfo='text'))
 
         df_station = calculate(coords, gasfuel)
-
 
         trace.append(
             go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
@@ -95,9 +98,8 @@ def update_figure(depart, arrivee, gasfuel, button):
     return {"data": trace,
             "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
                                 mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
-                                        'center': {'lat': 46.4833, 'lon': 2.5333}, 'pitch': 0, 'zoom': 4.5,
+                                        'center': {'lat': center[0], 'lon': center[1]}, 'pitch': 0, 'zoom': zoom,
                                         "style": 'mapbox://styles/mapbox/streets-v9'})}
-
 
 
 if __name__ == '__main__':
