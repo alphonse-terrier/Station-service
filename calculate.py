@@ -9,17 +9,12 @@ from pyspark import SparkContext
 from geograph import *
 
 
-def threshold(list_position, sensi):
-    list_out = []
+def threshold(list_position):
+    list_out = [list_position[0]]
 
-    for i in range(0, len(list_position)):
-        if i % sensi == 0:
-            list_out.append(list_position[i])
-
-    '''
-    for i in range(-1, -len(list_position), -1):
-        if haversine(list_position[i], list_position[i-1]) >
-    print(list_position)'''
+    for i in list_position:
+        if haversine(i[0], i[1], list_out[-1][0], list_out[-1][1]) > 2:
+            list_out.append(i)
     return (list_out)
 
 
@@ -30,15 +25,14 @@ f.close()
 sc = SparkContext("local", "App Name")
 sc.setLogLevel("WARN")
 sql = SQLContext(sc)
-
-
-def calculate(coords, fuel):
-    conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'],
+conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'],
                             password=credentials['password'], database=credentials['database'],
                             port=credentials['db_port'],
                             connect_timeout=10)
 
-    df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
+df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
+
+def calculate(coords, fuel, distancemax, pompes):
     spark = SparkSession.builder.getOrCreate()
     spark_df = sql.createDataFrame(df_stations)
 
@@ -47,7 +41,7 @@ def calculate(coords, fuel):
     spark_df = spark_df.select("gasstationid", "latitude", "longitude", fuel)
 
     list_position = list_trajet(coords)
-    thresh = threshold(list_position, 25)
+    thresh = threshold(list_position)
 
     headers = ['Longitude_Road', 'Latitude_Road']
 
@@ -61,7 +55,7 @@ def calculate(coords, fuel):
     cross = cross.withColumn('Distance',
                              udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
 
-    cross = cross.filter(cross.Distance < 3)
+    cross = cross.filter(cross.Distance < distancemax)
 
     df = cross.select("gasstationid").toPandas().drop_duplicates()
 
@@ -69,7 +63,7 @@ def calculate(coords, fuel):
     df = df.rename({fuel: 'prix'}, axis='columns')
     df['nom'] = df['address'] + r'<br />' + + df['codepostal'].astype(str) + ' ' + df['city'] + r'<br />Prix : ' + df[
         'prix'].astype(str) + ' euros'
-    df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(13)
+    df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(min(pompes, len(df)))
     return df
 
 

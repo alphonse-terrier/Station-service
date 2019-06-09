@@ -46,6 +46,14 @@ app.layout = html.Div([
         html.Div([
             html.Label('Destination'),
             dcc.Input(value='38 Rue Jean Mermoz, 14804 Deauville', type='text', id='arrivee'),
+        ], style={'width': "100%"}),
+        html.Div([
+            html.Label("Détour maximal (en km)"),
+            dcc.Input(value='3', type='number', id='distance'),
+        ], style={'width': "100%"}),
+        html.Div([
+            html.Label("Nombre de pompes à afficher"),
+            dcc.Input(value='10', type='number', id='pompes'),
         ], style={'width': "100%"})
     ]
     ),
@@ -62,38 +70,37 @@ app.layout = html.Div([
 @app.callback(
     dash.dependencies.Output("button", 'n_clicks'),
     [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
-     dash.dependencies.Input("fuel", "value")]
+     dash.dependencies.Input("fuel", "value"), dash.dependencies.Input("distance", "value"),
+     dash.dependencies.Input("pompes", "value")]
 )
-def reset_button(depart, arrivee, gasfuel):
+def reset_button(depart, arrivee, gasfuel, distance, pompes):
     return None
 
 
 @app.callback(
     dash.dependencies.Output('my-graph', 'figure'),
     [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
-     dash.dependencies.Input("fuel", "value"), dash.dependencies.Input("button", 'n_clicks')]
+     dash.dependencies.Input("fuel", "value"), dash.dependencies.Input("button", 'n_clicks'),
+     dash.dependencies.Input("distance", "value"), dash.dependencies.Input("distance", "value")]
 )
-def update_figure(depart, arrivee, gasfuel, button):
+def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
     trace = []
     center = (46.4833, 2.5333)
     zoom = 4.5
-    if button is not None:
+    if button is not None and depart is not None and arrivee is not None and gasfuel is not None and distance is not None and pompes is not None:
         coords = (whereitis(depart), whereitis(arrivee))
 
-        # print(coords)
         center = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2]
-        distance = haversine(coords[0][0], coords[0][1], coords[1][0], coords[1][1])
-        zoom = int(1300 / int(distance))
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
                              marker={'symbol': "circle", 'size': 12},
                              text=[depart, arrivee], hoverinfo='text'))
 
-        df_station = calculate(coords, gasfuel)
+        df_station = calculate(coords, gasfuel, int(distance), int(pompes))
 
         trace.append(
             go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
-                             marker={'symbol': "fuel", 'size': 10},
+                             marker={'symbol': "fuel", 'size': 11},
                              text=df_station['nom'], hoverinfo='text'))
 
     return {"data": trace,
