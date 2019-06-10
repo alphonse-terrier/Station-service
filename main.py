@@ -7,7 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
-from geograph import whereitis, haversine, getBoundsZoomLevel
+from geograph import whereitis, haversine
 from calculate import calculate
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
