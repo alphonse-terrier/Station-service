@@ -14,9 +14,6 @@ PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 
 mapbox_access_token = "pk.eyJ1IjoiYWxwaDQ5IiwiYSI6ImNqd25haHRmdTA1NW40M242Mmx3NjI4c3IifQ.u4lNPUHKy4je43P6xyjeXg"
 
-df1 = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv")
-df = df1.dropna(axis=0)
-
 app_name = 'dash-scattermapboxplot'
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
                         'https://codepen.io/alphonse-terrier/pen/jogGzz.css']
@@ -90,7 +87,6 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
     if button is not None and depart is not None and arrivee is not None and gasfuel is not None and distance is not None and pompes is not None:
         coords = (whereitis(depart), whereitis(arrivee))
 
-        center = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2]
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
                              marker={'symbol': "circle", 'size': 12},
