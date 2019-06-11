@@ -7,6 +7,7 @@ from geograph import *
 conf = SparkConf().setAppName("Stations services").setMaster("local[4]")
 sc = SparkContext(conf=conf)
 sql = SQLContext(sc)
+sql.sql("set spark.sql.shuffle.partitions=40")
 spark = SparkSession.builder.getOrCreate()
 
 spark_df = spark.read.json("stations.json")
