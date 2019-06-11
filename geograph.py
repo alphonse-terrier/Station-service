@@ -8,12 +8,13 @@ geolocator = Nominatim(user_agent="stationservice")
 
 
 def whereitis(address):
+    latitude, longitude = None, None
     try:
         location = geolocator.geocode(address)
         if 'France' in location.address:
             latitude, longitude = location.latitude, location.longitude
     except AttributeError:
-        latitude, longitude = None, None
+        pass
     return (latitude, longitude)
 
 
