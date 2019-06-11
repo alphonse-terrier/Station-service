@@ -18,9 +18,6 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
                         'https://codepen.io/alphonse-terrier/pen/jogGzz.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-liste_fuel = []
-for fuel in PRICES_LIST:
-    liste_fuel.append({'label': fuel, 'value': fuel.lower()})
 
 app.layout = html.Div([
 
@@ -30,8 +27,8 @@ app.layout = html.Div([
     html.Div([
         html.Label('Carburant'),
         dcc.Dropdown(
-            options=[{'label': i, 'value': i.lower()} for i in PRICES_LIST],
-            value='gazole',
+            options=[{'label': i, 'value': i} for i in PRICES_LIST],
+            value='Gazole',
             id='fuel'
         )], style={'width': "100%"}),
 
@@ -78,7 +75,7 @@ def reset_button(depart, arrivee, gasfuel, distance, pompes):
     dash.dependencies.Output('my-graph', 'figure'),
     [dash.dependencies.Input("depart", "value"), dash.dependencies.Input("arrivee", "value"),
      dash.dependencies.Input("fuel", "value"), dash.dependencies.Input("button", 'n_clicks'),
-     dash.dependencies.Input("distance", "value"), dash.dependencies.Input("distance", "value")]
+     dash.dependencies.Input("distance", "value"), dash.dependencies.Input("pompes", "value")]
 )
 def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
     trace = [go.Scattermapbox(lat=[None], lon=[None], mode='markers', text=[''])]
@@ -91,6 +88,7 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
+            #print(coords, gasfuel, distance, pompes)
             df_station = calculate(coords, gasfuel, int(distance), int(pompes))
 
             trace.append(

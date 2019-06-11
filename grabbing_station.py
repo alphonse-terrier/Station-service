@@ -6,6 +6,7 @@ import zipfile
 import io
 import xml.etree.ElementTree as et
 import json
+import pandas as pd
 
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
@@ -77,8 +78,10 @@ else:
     raise Exception()
 
 data = export('tmp/PrixCarburants_instantane.xml')
-print(data)
+df = pd.DataFrame.from_records(data)
+df.to_csv('stations.csv', index=False)
 
+'''
 f = open("credentials.json")
 credentials = json.load(f)
 f.close()
@@ -148,3 +151,4 @@ with conn.cursor() as cur:
     print('Populate')
 
 conn.commit()
+'''

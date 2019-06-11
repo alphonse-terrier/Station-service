@@ -22,21 +22,18 @@ f = open("credentials.json")
 credentials = json.load(f)
 f.close()
 
-conf = SparkConf().setAppName("PySpark App").setMaster("local[4]")
+conf = SparkConf().setAppName("PySpark App").setMaster("local[*]")
 sc = SparkContext(conf=conf)
 sc.setLogLevel("WARN")
 sql = SQLContext(sc)
-conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'],
-                            password=credentials['password'], database=credentials['database'],
-                            port=credentials['db_port'],
-                            connect_timeout=10)
 
-df_stations = pd.read_sql("SELECT * FROM gas_stations", conn)
+df_stations = pd.read_csv("stations.csv")
+
 
 def calculate(coords, fuel, distancemax, pompes):
     spark = SparkSession.builder.getOrCreate()
-    spark_df = sql.createDataFrame(df_stations)
-
+    # spark_df = sql.createDataFrame(df_stations)
+    spark_df = spark.read.load("stations.csv", format="csv", sep=",", inferSchema="true", header="true")
     spark_df = spark_df.filter(f"{fuel} != 'NaN'")
 
     spark_df = spark_df.select("gasstationid", "latitude", "longitude", fuel)
@@ -47,6 +44,7 @@ def calculate(coords, fuel, distancemax, pompes):
     headers = ['Longitude_Road', 'Latitude_Road']
 
     thresh_pd = pd.DataFrame(thresh, columns=headers)
+
     road = spark.createDataFrame(thresh_pd)
 
     udf_haversine = F.udf(haversine)
@@ -55,20 +53,23 @@ def calculate(coords, fuel, distancemax, pompes):
 
     cross = cross.withColumn('Distance',
                              udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
-
     cross = cross.filter(cross.Distance < distancemax)
 
     df = cross.select("gasstationid").toPandas().drop_duplicates()
-
     df = df.merge(df_stations, left_on='gasstationid', right_on='gasstationid')
+    print(df.columns)
     df = df.rename({fuel: 'prix'}, axis='columns')
+
     df['nom'] = df['address'] + r'<br />' + + df['codepostal'].astype(str) + ' ' + df['city'] + r'<br />Prix : ' + df[
-        'prix'].astype(str) + ' euros'
+        'prix'].round(3).astype(str) + ' euros'
+    print(df)
+
     df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(min(pompes, len(df)))
+
     return df
 
 
 if __name__ == '__main__':
     depart = (-0.8833, 47.0667)
     arrivee = (48.26424, 48.8534)
-    coords = (depart, arrivee)
+    calculate(((48.8706371, 2.3169393), (49.3601422, 0.0720105)), 'Gazole', 3, 3)

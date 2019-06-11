@@ -2,3 +2,4 @@ credentials.json
 *.xml
 .idea
 *.pyc
+*.csv
