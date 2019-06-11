@@ -1,13 +1,16 @@
-import psycopg2
-import json
-import pandas as pd
 from pyspark.sql import SQLContext
-from pyspark.sql import SparkSession, DataFrameReader
+from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-
 from pyspark import SparkConf, SparkContext
 from geograph import *
 
+conf = SparkConf().setAppName("Stations services").setMaster("local[*]")
+sc = SparkContext(conf=conf)
+sql = SQLContext(sc)
+spark = SparkSession.builder.getOrCreate()
+
+spark_df = spark.read.json("stations.json")
+spark_df.createOrReplaceTempView("stations")
 
 def threshold(list_position):
     list_out = [list_position[0]]
@@ -17,44 +20,30 @@ def threshold(list_position):
             list_out.append(i)
     return (list_out)
 
-
-f = open("credentials.json")
-credentials = json.load(f)
-f.close()
-
-conf = SparkConf().setAppName("Stations services").setMaster("local[*]")
-sc = SparkContext(conf=conf)
-sql = SQLContext(sc)
-
 def calculate(coords, fuel, distancemax, pompes):
-    spark = SparkSession.builder.getOrCreate()
-    spark_df = spark.read.json("stations.json")
-    spark_df.createOrReplaceTempView("stations")
-
-    #spark_df = spark_df.filter(f"{fuel} != 'NaN'")
-    viewStations = spark.sql(f"SELECT gasstationid, address, city, codepostal, latitude, longitude, {fuel} as prix FROM stations WHERE {fuel} is not null")
-
     list_position = list_trajet(coords)
     thresh = threshold(list_position)
-    rdd = sc.parallelize(thresh)
-
     headers = ['Longitude_Road', 'Latitude_Road']
-
+    rdd = sc.parallelize(thresh)
     road = spark.createDataFrame(rdd, headers)
+
+    viewstations = spark.sql(f"SELECT gasstationid, address, city, codepostal, latitude, longitude, {fuel} as prix FROM stations WHERE {fuel} is not null")
 
     udf_haversine = F.udf(haversine)
 
-    cross = viewStations.crossJoin(road)
+    cross = viewstations.crossJoin(road)
 
     cross = cross.withColumn('Distance',
                              udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
     cross = cross.filter(cross.Distance < distancemax)
 
-    gas_stat = cross.select('gasstationid').dropDuplicates()
-    df = gas_stat.join(viewStations, gas_stat.gasstationid == viewStations.gasstationid, how='left').sort("prix")
-    df = df.limit(min(pompes, df.count()))
+    gas_stat = cross.dropDuplicates(['gasstationid']).sort("prix")
+    gas_stat = gas_stat.limit(min(pompes, gas_stat.count()))
 
-    return df.toPandas()
+    gas_stat.createTempView("stat")
+    df = spark.sql("select * from stat").toPandas()
+    return df
+
 
 
 if __name__ == '__main__':

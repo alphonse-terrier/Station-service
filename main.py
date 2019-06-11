@@ -16,7 +16,6 @@ center = (46.4833, 2.5333)
 zoom = 4.5
 mapbox_access_token = "pk.eyJ1IjoiYWxwaDQ5IiwiYSI6ImNqd25haHRmdTA1NW40M242Mmx3NjI4c3IifQ.u4lNPUHKy4je43P6xyjeXg"
 
-app_name = 'dash-scattermapboxplot'
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
                         'https://codepen.io/alphonse-terrier/pen/jogGzz.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -108,4 +107,4 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, use_reloader=False)
