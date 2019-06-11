@@ -9,7 +9,8 @@ from geograph import whereitis
 from calculate import calculate
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
-
+center = (46.4833, 2.5333)
+zoom = 4.5
 mapbox_access_token = "pk.eyJ1IjoiYWxwaDQ5IiwiYSI6ImNqd25haHRmdTA1NW40M242Mmx3NjI4c3IifQ.u4lNPUHKy4je43P6xyjeXg"
 
 app_name = 'dash-scattermapboxplot'
@@ -80,9 +81,8 @@ def reset_button(depart, arrivee, gasfuel, distance, pompes):
      dash.dependencies.Input("distance", "value"), dash.dependencies.Input("distance", "value")]
 )
 def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
-    trace = []
-    center = (46.4833, 2.5333)
-    zoom = 4.5
+    trace = [go.Scattermapbox(lat=[None], lon=[None], mode='markers', text=[''])]
+
     if button is not None and depart is not None and arrivee is not None and gasfuel is not None and distance is not None and pompes is not None:
         coords = (whereitis(depart), whereitis(arrivee))
         trace.append(
