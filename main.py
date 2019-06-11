@@ -85,7 +85,7 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
         coords = (whereitis(depart), whereitis(arrivee))
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
-                             marker={'symbol': "circle", 'size': 12},
+                             marker={'symbol': "circle", 'size': 12, 'color': 'rgb(169, 204, 227)'},
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
@@ -96,7 +96,7 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
 
             trace.append(
                 go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
-                                 marker={'symbol': "fuel", 'size': 11},
+                                 marker={'symbol': "fuel", 'size': 11, 'color': 'rgb( 205, 92, 92 )'},
                                  text=df_station['nom'], hoverinfo='text'))
     return {"data": trace,
             "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
