@@ -3,11 +3,12 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark import SparkConf, SparkContext
 from geograph import *
+import time
 
 conf = SparkConf().setAppName("Stations services").setMaster("local[2]")
 sc = SparkContext(conf=conf)
 sql = SQLContext(sc)
-sql.sql("set spark.sql.shuffle.partitions=5")
+sql.sql("set spark.sql.shuffle.partitions=3")
 spark = SparkSession.builder.getOrCreate()
 
 spark_df = spark.read.json("stations.json")
@@ -50,4 +51,6 @@ def calculate(coords, fuel, distancemax, pompes):
 if __name__ == '__main__':
     depart = (-0.8833, 47.0667)
     arrivee = (48.26424, 48.8534)
+    start_time = time.time()
     calculate(((48.8706371, 2.3169393), (49.3601422, 0.0720105)), 'E10', 3, 10)
+    print("Temps d'éxécution : %s secondes" % (time.time() - start_time))
