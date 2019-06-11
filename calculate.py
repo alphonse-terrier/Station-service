@@ -4,7 +4,7 @@ import pyspark.sql.functions as F
 from pyspark import SparkConf, SparkContext
 from geograph import *
 
-conf = SparkConf().setAppName("Stations services").setMaster("local[*]")
+conf = SparkConf().setAppName("Stations services").setMaster("local[4]")
 sc = SparkContext(conf=conf)
 sql = SQLContext(sc)
 spark = SparkSession.builder.getOrCreate()

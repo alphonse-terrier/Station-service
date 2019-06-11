@@ -89,7 +89,6 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
-            # print(coords, gasfuel, distance, pompes)
             df_station = calculate(coords, gasfuel, int(distance), int(pompes))
             df_station['nom'] = df_station['address'] + r'<br />' + df_station['codepostal'].astype(str) + ' ' + \
                                 df_station['city'] + r'<br />Prix : ' + df_station['prix'].astype(float).round(
