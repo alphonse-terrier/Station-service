@@ -5,7 +5,7 @@ from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession, DataFrameReader
 import pyspark.sql.functions as F
 
-from pyspark import SparkContext
+from pyspark import SparkConf, SparkContext
 from geograph import *
 
 
@@ -22,7 +22,8 @@ f = open("credentials.json")
 credentials = json.load(f)
 f.close()
 
-sc = SparkContext("local", "App Name")
+conf = SparkConf().setAppName("PySpark App").setMaster("local[4]")
+sc = SparkContext(conf=conf)
 sc.setLogLevel("WARN")
 sql = SQLContext(sc)
 conn = psycopg2.connect(host=credentials['rds_host'], user=credentials['username'],

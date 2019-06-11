@@ -4,11 +4,17 @@ from math import radians, cos, sin, asin, sqrt
 from openrouteservice import convert
 import numpy as np
 
+geolocator = Nominatim(user_agent="stationservice")
+
 
 def whereitis(address):
-    geolocator = Nominatim(user_agent="stationservice")
-    location = geolocator.geocode(address)
-    return (location.latitude, location.longitude)
+    try:
+        location = geolocator.geocode(address)
+        if 'France' in location.address:
+            latitude, longitude = location.latitude, location.longitude
+    except AttributeError:
+        latitude, longitude = None, None
+    return (latitude, longitude)
 
 
 AVG_EARTH_RADIUS = 6371  # in km
@@ -43,4 +49,4 @@ def list_trajet(coords):
 
 if __name__ == '__main__':
     depart = ((47.0667 , -0.8), (47.4833, 2.5333))
-    print(getBoundsZoomLevel(depart, {'height': 700, 'width': 520}))
+    #print(getBoundsZoomLevel(depart, {'height': 700, 'width': 520}))

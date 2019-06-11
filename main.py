@@ -22,6 +22,7 @@ for fuel in PRICES_LIST:
     liste_fuel.append({'label': fuel, 'value': fuel.lower()})
 
 app.layout = html.Div([
+
     html.Div([html.H1("Stations services les moins chères")],
              style={'textAlign': "center", "padding-bottom": "10", "padding-top": "10"}),
 
@@ -84,19 +85,18 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
     zoom = 4.5
     if button is not None and depart is not None and arrivee is not None and gasfuel is not None and distance is not None and pompes is not None:
         coords = (whereitis(depart), whereitis(arrivee))
-
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
                              marker={'symbol': "circle", 'size': 12},
                              text=[depart, arrivee], hoverinfo='text'))
+        if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
+            1] is not None:
+            df_station = calculate(coords, gasfuel, int(distance), int(pompes))
 
-        df_station = calculate(coords, gasfuel, int(distance), int(pompes))
-
-        trace.append(
-            go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
-                             marker={'symbol': "fuel", 'size': 11},
-                             text=df_station['nom'], hoverinfo='text'))
-
+            trace.append(
+                go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
+                                 marker={'symbol': "fuel", 'size': 11},
+                                 text=df_station['nom'], hoverinfo='text'))
     return {"data": trace,
             "layout": go.Layout(autosize=True, hovermode='closest', showlegend=False, height=700,
                                 mapbox={'accesstoken': mapbox_access_token, 'bearing': 0,
