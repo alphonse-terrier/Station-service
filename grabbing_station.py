@@ -1,13 +1,10 @@
 # coding: utf-8
 
-import psycopg2
 import requests
 import zipfile
 import io
 import xml.etree.ElementTree as et
-import json
 import pandas as pd
-
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 SERVICES_LIST = ["Restauration à emporter", "Restauration sur place", "Bar", "Station de gonflage", "Lavage",
@@ -69,17 +66,19 @@ def export(input_file):
     return buff
 
 
-r = requests.get('https://donnees.roulez-eco.fr/opendata/instantane', stream=True)
-if r.status_code == 200:
-    with zipfile.ZipFile(io.BytesIO(r.content), 'r') as myzip:
-        myzip.extractall('tmp')
-        myzip.close()
-else:
-    raise Exception()
+def exporttojson():
+    r = requests.get('https://donnees.roulez-eco.fr/opendata/instantane', stream=True)
+    if r.status_code == 200:
+        with zipfile.ZipFile(io.BytesIO(r.content), 'r') as myzip:
+            myzip.extractall('tmp')
+            myzip.close()
+    else:
+        raise Exception()
+    data = export('tmp/PrixCarburants_instantane.xml')
+    df = pd.DataFrame.from_records(data)
+    # df.to_csv('stations.csv', index=False)
+    df.to_json('stations.json', orient='records')
 
-data = export('tmp/PrixCarburants_instantane.xml')
-df = pd.DataFrame.from_records(data)
-df.to_csv('stations.csv', index=False)
 
 '''
 f = open("credentials.json")
@@ -152,3 +151,6 @@ with conn.cursor() as cur:
 
 conn.commit()
 '''
+
+if __name__ == '__main__':
+    exporttojson()

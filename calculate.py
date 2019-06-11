@@ -22,54 +22,42 @@ f = open("credentials.json")
 credentials = json.load(f)
 f.close()
 
-conf = SparkConf().setAppName("PySpark App").setMaster("local[*]")
+conf = SparkConf().setAppName("Stations services").setMaster("local[*]")
 sc = SparkContext(conf=conf)
-sc.setLogLevel("WARN")
 sql = SQLContext(sc)
-
-df_stations = pd.read_csv("stations.csv")
-
 
 def calculate(coords, fuel, distancemax, pompes):
     spark = SparkSession.builder.getOrCreate()
-    # spark_df = sql.createDataFrame(df_stations)
-    spark_df = spark.read.load("stations.csv", format="csv", sep=",", inferSchema="true", header="true")
-    spark_df = spark_df.filter(f"{fuel} != 'NaN'")
+    spark_df = spark.read.json("stations.json")
+    spark_df.createOrReplaceTempView("stations")
 
-    spark_df = spark_df.select("gasstationid", "latitude", "longitude", fuel)
+    #spark_df = spark_df.filter(f"{fuel} != 'NaN'")
+    viewStations = spark.sql(f"SELECT gasstationid, address, city, codepostal, latitude, longitude, {fuel} as prix FROM stations WHERE {fuel} is not null")
 
     list_position = list_trajet(coords)
     thresh = threshold(list_position)
+    rdd = sc.parallelize(thresh)
 
     headers = ['Longitude_Road', 'Latitude_Road']
 
-    thresh_pd = pd.DataFrame(thresh, columns=headers)
-
-    road = spark.createDataFrame(thresh_pd)
+    road = spark.createDataFrame(rdd, headers)
 
     udf_haversine = F.udf(haversine)
 
-    cross = spark_df.crossJoin(road)
+    cross = viewStations.crossJoin(road)
 
     cross = cross.withColumn('Distance',
                              udf_haversine(cross.latitude, cross.longitude, cross.Latitude_Road, cross.Longitude_Road))
     cross = cross.filter(cross.Distance < distancemax)
 
-    df = cross.select("gasstationid").toPandas().drop_duplicates()
-    df = df.merge(df_stations, left_on='gasstationid', right_on='gasstationid')
-    print(df.columns)
-    df = df.rename({fuel: 'prix'}, axis='columns')
+    gas_stat = cross.select('gasstationid').dropDuplicates()
+    df = gas_stat.join(viewStations, gas_stat.gasstationid == viewStations.gasstationid, how='left').sort("prix")
+    df = df.limit(min(pompes, df.count()))
 
-    df['nom'] = df['address'] + r'<br />' + + df['codepostal'].astype(str) + ' ' + df['city'] + r'<br />Prix : ' + df[
-        'prix'].round(3).astype(str) + ' euros'
-    print(df)
-
-    df = df[['nom', 'latitude', 'longitude', 'prix']].sort_values('prix', ascending=True).head(min(pompes, len(df)))
-
-    return df
+    return df.toPandas()
 
 
 if __name__ == '__main__':
     depart = (-0.8833, 47.0667)
     arrivee = (48.26424, 48.8534)
-    calculate(((48.8706371, 2.3169393), (49.3601422, 0.0720105)), 'Gazole', 3, 3)
+    calculate(((48.8706371, 2.3169393), (49.3601422, 0.0720105)), 'E10', 3, 10)

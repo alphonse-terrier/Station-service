@@ -7,6 +7,9 @@ import dash_html_components as html
 import plotly.graph_objs as go
 from geograph import whereitis
 from calculate import calculate
+from grabbing_station import exporttojson
+
+exporttojson()
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 center = (46.4833, 2.5333)
@@ -17,7 +20,6 @@ app_name = 'dash-scattermapboxplot'
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
                         'https://codepen.io/alphonse-terrier/pen/jogGzz.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
 
 app.layout = html.Div([
 
@@ -88,8 +90,11 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
-            #print(coords, gasfuel, distance, pompes)
+            # print(coords, gasfuel, distance, pompes)
             df_station = calculate(coords, gasfuel, int(distance), int(pompes))
+            df_station['nom'] = df_station['address'] + r'<br />' + df_station['codepostal'].astype(str) + ' ' + \
+                                df_station['city'] + r'<br />Prix : ' + df_station['prix'].astype(float).round(
+                3).astype(str) + ' euros'
 
             trace.append(
                 go.Scattermapbox(lat=df_station["latitude"], lon=df_station["longitude"], mode='markers',
