@@ -2,7 +2,6 @@ import openrouteservice
 from geopy.geocoders import Nominatim
 from math import radians, cos, sin, asin, sqrt
 from openrouteservice import convert
-import numpy as np
 
 geolocator = Nominatim(user_agent="stationservice")
 

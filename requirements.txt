@@ -1,0 +1,15 @@
+dash==0.43.0
+dash-core-components==0.48.0
+dash-html-components==0.16.0
+dash-renderer==0.24.0
+dash-table==3.7.0
+pandas==0.23.4
+plotly==3.10.0
+pyspark==2.4.3
+pyspark-stubs==2.4.0.post1
+Flask==1.0.3
+Flask-Compress==1.4.0
+geographiclib==1.49
+geopy==1.20.0
+requests==2.21.0
+openrouteservice==2.2.1
