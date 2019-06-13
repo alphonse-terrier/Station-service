@@ -14,6 +14,7 @@ exporttojson()
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 center = (46.4833, 2.5333)
 zoom = 4.5
+
 mapbox_access_token = "pk.eyJ1IjoiYWxwaDQ5IiwiYSI6ImNqd25haHRmdTA1NW40M242Mmx3NjI4c3IifQ.u4lNPUHKy4je43P6xyjeXg"
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',

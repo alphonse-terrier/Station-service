@@ -47,6 +47,7 @@ def list_trajet(coords):
     list_position = decoded['coordinates']
     return (list_position)
 
+
 if __name__ == '__main__':
-    depart = ((47.0667 , -0.8), (47.4833, 2.5333))
-    #print(getBoundsZoomLevel(depart, {'height': 700, 'width': 520}))
+    depart = ((47.0667, -0.8), (47.4833, 2.5333))
+    # print(getBoundsZoomLevel(depart, {'height': 700, 'width': 520}))
