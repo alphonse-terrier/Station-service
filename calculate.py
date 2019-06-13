@@ -46,7 +46,7 @@ def calculate(coords, fuel, distancemax, pompes):
     gas_stat = cross.dropDuplicates(['gasstationid']).sort("prix")
     gas_stat = gas_stat.limit(min(pompes, gas_stat.count()))
 
-    gas_stat.createTempView("stat")
+    gas_stat.createOrReplaceTempView("stat")
     df = spark.sql("select * from stat").toPandas()
     return df
 

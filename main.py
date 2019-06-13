@@ -5,15 +5,13 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
-from geograph import whereitis
+from geograph import whereitis, haversine
 from calculate import calculate
 from grabbing_station import export_to_json
 
 export_to_json()
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
-center = (46.4833, 2.5333)
-zoom = 4.5
 
 mapbox_access_token = "pk.eyJ1IjoiYWxwaDQ5IiwiYSI6ImNqd25haHRmdTA1NW40M242Mmx3NjI4c3IifQ.u4lNPUHKy4je43P6xyjeXg"
 
@@ -81,15 +79,24 @@ def reset_button(depart, arrivee, gasfuel, distance, pompes):
 )
 def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
     trace = [go.Scattermapbox(lat=[None], lon=[None], mode='markers', text=[''])]
-
+    center = (46.4833, 2.5333)
+    zoom = 4.5
     if button is not None and depart is not None and arrivee is not None and gasfuel is not None and distance is not None and pompes is not None:
         coords = (whereitis(depart), whereitis(arrivee))
+
         trace.append(
             go.Scattermapbox(lat=[coords[0][0], coords[1][0]], lon=[coords[0][1], coords[1][1]], mode='markers',
                              marker={'symbol': "circle", 'size': 12, 'color': 'rgb(169, 204, 227)'},
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
+            center = ((coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2)
+            print(center)
+            distances_for_zoom = [haversine(coords[0][0], coords[1][0], coords[0][0], coords[1][1])*zoom/2100,
+                                  haversine(coords[0][1], coords[1][1], coords[0][0], coords[1][1])*zoom/2100]
+            print(distances_for_zoom)
+            zoom = min(distances_for_zoom)
+
             df_station = calculate(coords, gasfuel, int(distance), int(pompes))
             df_station['nom'] = df_station['address'] + r'<br />' + df_station['codepostal'].astype(str) + ' ' + \
                                 df_station['city'] + r'<br />Prix : ' + df_station['prix'].astype(float).round(
