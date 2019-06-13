@@ -66,7 +66,7 @@ def export(input_file):
     return buff
 
 
-def exporttojson():
+def export_to_json():
     r = requests.get('https://donnees.roulez-eco.fr/opendata/instantane', stream=True)
     if r.status_code == 200:
         with zipfile.ZipFile(io.BytesIO(r.content), 'r') as myzip:
@@ -76,8 +76,7 @@ def exporttojson():
         raise Exception()
     data = export('tmp/PrixCarburants_instantane.xml')
     df = pd.DataFrame.from_records(data)
-    # df.to_csv('stations.csv', index=False)
     df.to_json('stations.json', orient='records')
 
 if __name__ == '__main__':
-    exporttojson()
+    export_to_json()

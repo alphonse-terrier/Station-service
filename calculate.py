@@ -14,13 +14,16 @@ spark = SparkSession.builder.getOrCreate()
 spark_df = spark.read.json("stations.json")
 spark_df.createOrReplaceTempView("stations")
 
+
 def threshold(list_position):
+    '''Cette fonction permet de ne garder qu'un point tous les deux kilomètres'''
     list_out = [list_position[0]]
 
     for i in list_position:
         if haversine(i[0], i[1], list_out[-1][0], list_out[-1][1]) > 2:
             list_out.append(i)
     return (list_out)
+
 
 def calculate(coords, fuel, distancemax, pompes):
     list_position = list_trajet(coords)
@@ -29,7 +32,8 @@ def calculate(coords, fuel, distancemax, pompes):
     rdd = sc.parallelize(thresh)
     road = spark.createDataFrame(rdd, headers)
 
-    viewstations = spark.sql(f"SELECT gasstationid, address, city, codepostal, latitude, longitude, {fuel} as prix FROM stations WHERE {fuel} is not null")
+    viewstations = spark.sql(
+        f"SELECT gasstationid, address, city, codepostal, latitude, longitude, {fuel} as prix FROM stations WHERE {fuel} is not null")
 
     udf_haversine = F.udf(haversine)
 
@@ -47,10 +51,7 @@ def calculate(coords, fuel, distancemax, pompes):
     return df
 
 
-
 if __name__ == '__main__':
-    depart = (-0.8833, 47.0667)
-    arrivee = (48.26424, 48.8534)
     start_time = time.time()
     calculate(((48.8706371, 2.3169393), (49.3601422, 0.0720105)), 'E10', 3, 10)
     print("Temps d'éxécution : %s secondes" % (time.time() - start_time))

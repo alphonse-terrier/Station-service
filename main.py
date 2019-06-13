@@ -7,9 +7,9 @@ import dash_html_components as html
 import plotly.graph_objs as go
 from geograph import whereitis
 from calculate import calculate
-from grabbing_station import exporttojson
+from grabbing_station import export_to_json
 
-exporttojson()
+export_to_json()
 
 PRICES_LIST = ["Gazole", "E10", "SP98", "E85", "GPLc", "SP95"]
 center = (46.4833, 2.5333)
