@@ -90,13 +90,14 @@ def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
                              text=[depart, arrivee], hoverinfo='text'))
         if coords[0][0] is not None and coords[1][0] is not None and coords[0][1] is not None and coords[1][
             1] is not None:
+            """
             center = ((coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2)
             print(center)
-            distances_for_zoom = [haversine(coords[0][0], coords[1][0], coords[0][0], coords[1][1])*zoom/2100,
-                                  haversine(coords[0][1], coords[1][1], coords[0][0], coords[1][1])*zoom/2100]
+            distances_for_zoom = [haversine(coords[0][0], coords[0][1], coords[0][0], coords[1][1]) * zoom / 100,
+                                  haversine(coords[1][0], coords[1][1], coords[0][0], coords[1][1]) * zoom / 35]
             print(distances_for_zoom)
             zoom = min(distances_for_zoom)
-
+            """
             df_station = calculate(coords, gasfuel, int(distance), int(pompes))
             df_station['nom'] = df_station['address'] + r'<br />' + df_station['codepostal'].astype(str) + ' ' + \
                                 df_station['city'] + r'<br />Prix : ' + df_station['prix'].astype(float).round(
