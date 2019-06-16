@@ -10,6 +10,7 @@ sc = SparkContext(conf=conf)
 sql = SQLContext(sc)
 sql.sql("set spark.sql.shuffle.partitions=3")
 spark = SparkSession.builder.getOrCreate()
+spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 
 spark_df = spark.read.json("stations.json")
 spark_df.createOrReplaceTempView("stations")
