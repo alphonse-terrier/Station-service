@@ -1,6 +1,3 @@
-# !/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -68,6 +65,7 @@ app.layout = html.Div([
      dash.dependencies.Input("pompes", "value")]
 )
 def reset_button(depart, arrivee, gasfuel, distance, pompes):
+    """Cette fonction permet de reset le nombre de clics sur le bouton Valider"""
     return None
 
 
@@ -78,6 +76,7 @@ def reset_button(depart, arrivee, gasfuel, distance, pompes):
      dash.dependencies.Input("distance", "value"), dash.dependencies.Input("pompes", "value")]
 )
 def update_figure(depart, arrivee, gasfuel, button, distance, pompes):
+    """Cette fonction permet d'afficher la carte après action sur le bouton Valider"""
     trace = [go.Scattermapbox(lat=[None], lon=[None], mode='markers', text=[''])]
     center = (46.4833, 2.5333)
     zoom = 4.5

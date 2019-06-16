@@ -27,6 +27,7 @@ def threshold(list_position):
 
 
 def calculate(coords, fuel, distancemax, pompes):
+    """Cette fonction permet de calculer quelles sont les stations-services les moins chères sur l'itinéraire"""
     list_position = list_trajet(coords)
     thresh = threshold(list_position)
     headers = ['Longitude_Road', 'Latitude_Road']
@@ -46,7 +47,6 @@ def calculate(coords, fuel, distancemax, pompes):
 
     gas_stat = cross.dropDuplicates(['gasstationid']).sort("prix")
     gas_stat = gas_stat.limit(min(pompes, gas_stat.count()))
-
     gas_stat.createOrReplaceTempView("stat")
     df = spark.sql("select * from stat").toPandas()
     return df

@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import requests
 import zipfile
 import io
@@ -20,6 +18,7 @@ def convert_none(val):
 
 
 def extract_prices(pdv):
+    """Cette fonction permet d'extraire les prix par points de vente"""
     prices = {}
     for p in PRICES_LIST:
         prices[p] = None
@@ -31,17 +30,8 @@ def extract_prices(pdv):
     return prices
 
 
-def extract_services(pdv):
-    services = {}
-    for s in SERVICES_LIST:
-        services[s] = False
-
-    for service in pdv.find('services').findall('service'):
-        services[service.text] = True
-    return services
-
-
 def export(input_file):
+    """Cette fonction tranforme le XML en un dictionnaire avec les informations intéressantes"""
     tree = et.parse(input_file)
     root = tree.getroot()
 
@@ -67,6 +57,7 @@ def export(input_file):
 
 
 def export_to_json():
+    """Cette fonction requête le site et exporte les stations en Json"""
     r = requests.get('https://donnees.roulez-eco.fr/opendata/instantane', stream=True)
     if r.status_code == 200:
         with zipfile.ZipFile(io.BytesIO(r.content), 'r') as myzip:

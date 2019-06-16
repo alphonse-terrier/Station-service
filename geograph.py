@@ -7,6 +7,7 @@ geolocator = Nominatim(user_agent="stationservice")
 
 
 def whereitis(address):
+    """Cette focntion permet de géocoder une adresse en latitude/longitude"""
     latitude, longitude = None, None
     try:
         location = geolocator.geocode(address)
@@ -22,25 +23,25 @@ MILES_PER_KILOMETER = 0.621371
 
 
 def haversine(lat1, lng1, lat2, lng2, miles=False):
-    # convert all latitudes/longitudes from decimal degrees to radians
+    """Cette fonction permet de calculer la distance kilométrique entre deux latitudes/longitudes"""
     lat1, lng1, lat2, lng2 = map(radians, (lat1, lng1, lat2, lng2))
 
-    # calculate haversine
     lat = lat2 - lat1
     lng = lng2 - lng1
     d = sin(lat * 0.5) ** 2 + cos(lat1) * cos(lat2) * sin(lng * 0.5) ** 2
     h = 2 * AVG_EARTH_RADIUS * asin(sqrt(d))
     if miles:
-        return h * MILES_PER_KILOMETER  # in miles
+        return h * MILES_PER_KILOMETER
     else:
-        return h  # in kilometers
+        return h
 
 
 client = openrouteservice.Client(
-    key='5b3ce3597851110001cf6248c65425cfab7e40539af9e1987459f8e4')  # Specify your personal API key
+    key='5b3ce3597851110001cf6248c65425cfab7e40539af9e1987459f8e4')
 
 
 def list_trajet(coords):
+    """Cette fonction permet de générer une liste avec l'itinéraire du trajet entre les deux points donnés en entrée"""
     coords = ((coords[0][1], coords[0][0]), (coords[1][1], coords[1][0]))
     geometry = client.directions(coords)['routes'][0]['geometry']
     decoded = convert.decode_polyline(geometry)
