@@ -13,4 +13,4 @@ geographiclib==1.49
 geopy==1.20.0
 requests==2.21.0
 openrouteservice==2.2.1
-pyarrow==0.13.0
+pyarrow==0.15.1
