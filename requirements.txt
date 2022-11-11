@@ -5,7 +5,7 @@ dash-renderer==0.24.0
 dash-table==3.7.0
 pandas==0.23.4
 plotly==3.10.0
-pyspark==2.4.3
+pyspark==3.2.2
 pyspark-stubs==2.4.0.post1
 Flask==1.0.3
 Flask-Compress==1.4.0
