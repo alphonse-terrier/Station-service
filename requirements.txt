@@ -7,7 +7,7 @@ pandas==0.23.4
 plotly==3.10.0
 pyspark==2.4.3
 pyspark-stubs==2.4.0.post1
-Flask==1.0.3
+Flask==2.3.2
 Flask-Compress==1.4.0
 geographiclib==1.49
 geopy==1.20.0
