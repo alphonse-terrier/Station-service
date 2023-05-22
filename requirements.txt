@@ -11,6 +11,6 @@ Flask==1.0.3
 Flask-Compress==1.4.0
 geographiclib==1.49
 geopy==1.20.0
-requests==2.21.0
+requests==2.31.0
 openrouteservice==2.2.1
 pyarrow==0.13.0
